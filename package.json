@@ -9,7 +9,9 @@
     "lint": "next lint",
     "list": "node scripts/dev.js list",
     "generate": "node scripts/dev.js generate",
-    "parse-prd": "node scripts/dev.js parse-prd"
+    "parse-prd": "node scripts/dev.js parse-prd",
+    "db:seed": "node scripts/seed-database.js",
+    "db:setup": "node scripts/seed-database.js"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",
