@@ -103,35 +103,39 @@ export function CalendarView() {
     const fetchData = async () => {
       setIsLoading(true)
 
-      // Určení rozsahu dat podle aktuálního pohledu
-      let startDate, endDate
+      try {
+        // Určení rozsahu dat podle aktuálního pohledu
+        let startDate, endDate
 
-      if (view === "day") {
-        startDate = format(currentDate, "yyyy-MM-dd")
-        endDate = format(currentDate, "yyyy-MM-dd")
-      } else if (view === "week") {
-        const start = startOfWeek(currentDate, { weekStartsOn: 1 }) // Pondělí jako první den týdne
-        startDate = format(start, "yyyy-MM-dd")
-        endDate = format(addDays(start, 6), "yyyy-MM-dd")
-      } else {
-        const start = startOfMonth(currentDate)
-        startDate = format(start, "yyyy-MM-dd")
-        endDate = format(addDays(start, getDaysInMonth(currentDate) - 1), "yyyy-MM-dd")
+        if (view === "day") {
+          startDate = format(currentDate, "yyyy-MM-dd")
+          endDate = format(currentDate, "yyyy-MM-dd")
+        } else if (view === "week") {
+          const start = startOfWeek(currentDate, { weekStartsOn: 1 }) // Pondělí jako první den týdne
+          startDate = format(start, "yyyy-MM-dd")
+          endDate = format(addDays(start, 6), "yyyy-MM-dd")
+        } else {
+          const start = startOfMonth(currentDate)
+          startDate = format(start, "yyyy-MM-dd")
+          endDate = format(addDays(start, getDaysInMonth(currentDate) - 1), "yyyy-MM-dd")
+        }
+
+        // Načtení rezervací
+        const bookingsResult = await getBookingsForCalendar(startDate, endDate)
+        if (bookingsResult.success) {
+          setBookings(bookingsResult.bookings as Booking[])
+        }
+
+        // Načtení pracovní doby
+        const businessHoursResult = await getBusinessHours()
+        if (businessHoursResult.success) {
+          setBusinessHours(businessHoursResult.businessHours)
+        }
+      } catch (error) {
+        console.error('Error fetching calendar data:', error)
+      } finally {
+        setIsLoading(false)
       }
-
-      // Načtení rezervací
-      const bookingsResult = await getBookingsForCalendar(startDate, endDate)
-      if (bookingsResult.success) {
-        setBookings(bookingsResult.bookings as Booking[])
-      }
-
-      // Načtení pracovní doby
-      const businessHoursResult = await getBusinessHours()
-      if (businessHoursResult.success) {
-        setBusinessHours(businessHoursResult.businessHours)
-      }
-
-      setIsLoading(false)
     }
 
     fetchData()
@@ -158,30 +162,34 @@ export function CalendarView() {
 
   // Kontrola URL parametrů při načtení komponenty
   useEffect(() => {
-    const viewParam = searchParams.get("view")
-    const dateParam = searchParams.get("date")
+    if (searchParams) {
+      const viewParam = searchParams.get("view")
+      const dateParam = searchParams.get("date")
 
-    if (viewParam && ["day", "week", "month"].includes(viewParam)) {
-      setView(viewParam as "day" | "week" | "month")
-    }
+      if (viewParam && ["day", "week", "month"].includes(viewParam)) {
+        setView(viewParam as "day" | "week" | "month")
+      }
 
-    if (dateParam) {
-      try {
-        const parsedDate = parseISO(dateParam)
-        setCurrentDate(parsedDate)
-      } catch (error) {
-        console.error("Invalid date parameter:", error)
+      if (dateParam) {
+        try {
+          const parsedDate = parseISO(dateParam)
+          setCurrentDate(parsedDate)
+        } catch (error) {
+          console.error("Invalid date parameter:", error)
+        }
       }
     }
   }, [searchParams])
 
   // Aktualizace URL při změně pohledu nebo data
   useEffect(() => {
-    const params = new URLSearchParams()
-    params.set("view", view)
-    params.set("date", format(currentDate, "yyyy-MM-dd"))
+    if (typeof window !== 'undefined' && router) {
+      const params = new URLSearchParams()
+      params.set("view", view)
+      params.set("date", format(currentDate, "yyyy-MM-dd"))
 
-    router.replace(`/admin/dashboard/calendar?${params.toString()}`)
+      router.replace(`/admin/dashboard/calendar?${params.toString()}`)
+    }
   }, [view, currentDate, router])
 
   // Navigace v kalendáři
