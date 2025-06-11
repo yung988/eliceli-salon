@@ -1,0 +1,35 @@
+# Ignoruj všechno
+*
+
+# Kromě hlavních složek a komponent potřebných pro push
+!app/
+!components/
+!hooks/
+!lib/
+!public/
+!styles/
+
+# Potřebné konfigurační soubory
+!package.json
+!pnpm-lock.yaml
+!next.config.mjs
+!tailwind.config.ts
+!tsconfig.json
+!postcss.config.mjs
+!components.json
+!middleware.ts
+!README.md
+!.gitignore
+
+# Ale stále ignoruj běžné věci i v povolených složkách
+node_modules/
+.next/
+.vercel/
+.env*
+.DS_Store
+*.log
+*.tsbuildinfo
+next-env.d.ts
+.cursor/
+tasks/
+scripts/
